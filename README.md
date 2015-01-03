@@ -10,6 +10,11 @@ Completed user stories:
  * [x] Required: Did you include support for editing todo items as described above?
  * [x] Required: Does your app persist todo items and retrieve them properly on app restart?
 
+Optional features implemented:
+
+ * [x] Add "normal priority" and "high priority" setting.
+ * [x] Use SQLite for persistence instead of flat files.
+
 Notes:
 
 ![Video Walkthrough](GIF_walkthrough.gif)

@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 
 public class EditItemActivity extends ActionBarActivity {
     private EditText etEditText;
     private int textPosition;
+    private CheckBox cbEditHighPriority;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,11 +21,20 @@ public class EditItemActivity extends ActionBarActivity {
         setContentView(R.layout.activity_edit_item);
 
         // get the text of the item being edited and populate the et
-        String oldText = getIntent().getStringExtra("text");
+        String oldText = getIntent().getStringExtra("body");
+        int oldPriority = getIntent().getIntExtra("priority", -1);
         etEditText = (EditText) findViewById(R.id.etEditText);
         etEditText.setText(oldText);
 
         textPosition = getIntent().getIntExtra("position", -1);
+
+        cbEditHighPriority = (CheckBox) findViewById(R.id.cbEditHighPriority);
+        if (oldPriority == TodoItem.HIGH_PRIORITY) {
+            cbEditHighPriority.setChecked(true);
+        }
+        else {
+            cbEditHighPriority.setChecked(false);
+        }
     }
 
 
@@ -52,7 +63,8 @@ public class EditItemActivity extends ActionBarActivity {
     public void onSave(View v) {
         // return the changed text and the original position.
         Intent result = new Intent();
-        result.putExtra("text", etEditText.getText().toString());
+        result.putExtra("body", etEditText.getText().toString());
+        result.putExtra("priority", cbEditHighPriority.isChecked() ? TodoItem.HIGH_PRIORITY : TodoItem.NORMAL_PRIORITY);
         result.putExtra("position", textPosition);
         setResult(RESULT_OK, result);
         this.finish();

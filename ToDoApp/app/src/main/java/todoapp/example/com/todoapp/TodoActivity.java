@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -23,12 +24,12 @@ import java.util.ArrayList;
 
 
 public class TodoActivity extends ActionBarActivity {
-    private ArrayList<String> todoItems;
-    private ArrayAdapter<String> todoAdapter;
+    private ArrayList<TodoItem> todoItems;
+    private ArrayAdapter<TodoItem> todoAdapter;
     private ListView lvItems;
     private EditText etNewItem;
+    private CheckBox cbHighPriority;
     private final int REQUEST_CODE = 20;
-    private final String TODO_SAVE_FILENAME = ".todoItems";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,11 @@ public class TodoActivity extends ActionBarActivity {
         setContentView(R.layout.activity_todo);
         etNewItem = (EditText) findViewById(R.id.etNewItem);
         lvItems = (ListView) findViewById(R.id.lvItems);
+        cbHighPriority = (CheckBox) findViewById(R.id.cbHighPriority);
 
         // read in saved items and add to the array adapter
         readTodoItems();
-        todoAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, todoItems);
+        todoAdapter = new TodoItemAdapter(this, todoItems);
         lvItems.setAdapter(todoAdapter);
         setupListViewListener();
     }
@@ -62,7 +64,8 @@ public class TodoActivity extends ActionBarActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // set up click to launch the Edit Item Activity, passing it the text and position
                 Intent i = new Intent(TodoActivity.this, EditItemActivity.class);
-                i.putExtra("text", todoItems.get(position));
+                i.putExtra("body", todoItems.get(position).getBody());
+                i.putExtra("priority", todoItems.get(position).getPriority());
                 i.putExtra("position", position);
                 startActivityForResult(i, REQUEST_CODE);
             }
@@ -74,56 +77,30 @@ public class TodoActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // when the edit activity is done, save the new changes
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-            String newText = data.getExtras().getString("text");
+            String newText = data.getExtras().getString("body");
+            int newPriority = data.getExtras().getInt("priority");
             int pos = data.getIntExtra("position", -1);
-            todoItems.set(pos, newText);
+            todoItems.set(pos, new TodoItem(newText, newPriority));
             todoAdapter.notifyDataSetChanged();
             saveTodoItems();
         }
     }
 
     private void readTodoItems() {
-        // read the items from the save file
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, TODO_SAVE_FILENAME);
+        TodoItemDatabase db = new TodoItemDatabase(this);
+        todoItems = (ArrayList) db.getAllTodoItems();
 
-        try {
-            // read in the items
-            todoItems = new ArrayList<String>(FileUtils.readLines(todoFile));
-        } catch (FileNotFoundException e) {
-            // file does not exist, so create an empty file
-            File emptyFile = new File(filesDir, TODO_SAVE_FILENAME);
-            try {
-                emptyFile.createNewFile();
-                todoItems = new ArrayList<String>();
-                return;
-            } catch (IOException e2) {
-                // couldn't create empty file
-                e.printStackTrace();
-            }
-            todoItems = new ArrayList<String>();
-        } catch (IOException e) {
-            // some other error reading the files
-            e.printStackTrace();
-        }
     }
 
     private void saveTodoItems() {
-        // save the contents of the todoItems ArrayList to the save file
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, TODO_SAVE_FILENAME);
-
-        try {
-            FileUtils.writeLines(todoFile, todoItems);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        TodoItemDatabase db = new TodoItemDatabase(this);
+        db.writeTodoItems(todoItems);
     }
 
     public void onAddedItem(View v) {
         // add a new item to the list
-        String itemText = etNewItem.getText().toString();
-        todoAdapter.add(itemText);
+        TodoItem item = new TodoItem(etNewItem.getText().toString(), cbHighPriority.isChecked() ? TodoItem.HIGH_PRIORITY : TodoItem.NORMAL_PRIORITY);
+        todoAdapter.add(item);
         saveTodoItems(); // save the changes
         etNewItem.setText("");
     }

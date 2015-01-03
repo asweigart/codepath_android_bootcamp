@@ -10,5 +10,7 @@
     <string name="title_activity_edit_item">EditItemActivity</string>
     <string name="EditItemBelow">Edit Item Below:</string>
     <string name="Save">Save</string>
+    <string name="HighPriority">High Priority</string>
+    <string name="HIGH_PRIORITY">HIGH PRIORITY</string>
 
 </resources>
