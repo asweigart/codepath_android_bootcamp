@@ -51,6 +51,7 @@ public class TodoActivity extends ActionBarActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 todoItems.remove(position);
                 todoAdapter.notifyDataSetChanged();
+                saveTodoItems(); // save changes
                 return true;
             }
         });
