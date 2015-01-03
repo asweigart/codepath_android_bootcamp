@@ -12,6 +12,7 @@ Completed user stories:
 
 Optional features implemented:
 
+ * [x] Modified the style of the list view with a custom adapter.
  * [x] Add "normal priority" and "high priority" setting.
  * [x] Use SQLite for persistence instead of flat files.
 
